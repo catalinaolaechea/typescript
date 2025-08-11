@@ -12,114 +12,81 @@ vende la ferretería utilizando TypeScript.
 c. Armar utilizando TypeScript una funcion que permita agregar los productos de 
 la ferretería a la lista 
 */
-interface nombreProductos{
-    nombre:string;
-    stock:number;
-    tipo?:string;
-}
-
-class productosGenerales{
-    productos:nombreProductos[];
-    marca:string;
-    stock:number;
-    precio:number;
-    descuento:boolean;
-
-    constructor(
-        marcaProducto:string, 
-        stockProducto:number, 
-        precioProducto:number, 
-        descuentoProducto:boolean
-    ) {
-        this.productos= [];
-        this.marca = marcaProducto;
-        this.stock = stockProducto;
-        this.precio= precioProducto
-        this.descuento= descuentoProducto
+/*
+class Producto {
+    constructor(protected marca:string, protected cantidad:number, protected precio:number, protected tieneDescuento:boolean){
     }
-
-    agregarNuevoProducto(nombre:string, cantidad:number):void{
-        if(nombre === "martillo" || nombre === "alambre"){
-            let productoExiste = this.productos.find((producto) => producto.nombre === nombre );
-            //si el producto existe
-            if( productoExiste){
-                productoExiste.stock += cantidad; 
-                console.log(`se agregó stock a "${nombre}".`)
-            }
-            //si el producto no existe
-            else{
-                this.productos.push({nombre, stock:cantidad })
-                console.log(`el producto "${nombre}" se agregó con exito a la base de datos.`)
-            }
-        }
-        else if (nombre === "clavo"){
-            console.log("por favor cargar los clavos en la sección de clavos")
-        }
-        else{
-            console.log("no estan admitidos esos productos en la ferretería")
-        }
+    mostrarDetalle():string{
+        return `Producto ${this.marca}: cantidad total:${this.cantidad}, precio:${this.precio}. hay descuento? ${this.tieneDescuento ?? "false"}`
     }
-
-    listarProductos():void{
-        console.log("lista de stock de productos de la ferretería: ")
-        this.productos.forEach((producto)=>console.log(`${producto.nombre}: ${producto.stock}`))
+    getTotal():number{
+        return this.cantidad * this.precio
     }
 }
 
-class clavo extends productosGenerales{
-    tipo: string;
-    constructor(
-        marcaProducto:string, 
-        stockProducto:number, 
-        precioProducto:number, 
-        descuentoProducto:boolean, 
-        tipoClavo:string
-    ){
-        super(marcaProducto, stockProducto, precioProducto, descuentoProducto);
-        this.tipo = tipoClavo; //en caso de que se quiera elimina o agregar una clase nueva de clavos 
+type TipoDeClavo = 'anillado' | 'cabezaAncha' | 'cabezaPlana' | 'vidriero'
+class Clavo extends Producto {
+    constructor(marca:string, cantidad:number, precio:number, tieneDescuento:boolean, protected tipoDeClavo: TipoDeClavo){
+        super(marca, cantidad, precio, tieneDescuento)
     }
-    agregarProducto(nombre:string, tipo:string, cantidad:number):void {
-        if(nombre==="clavo"){
-            let productoExiste = this.productos.find((producto) => producto.nombre === nombre && producto.tipo === tipo );
-            //si el producto existe
-            if( productoExiste ){
-                productoExiste.stock += cantidad; 
-                console.log(`se agregó stock al tipo "${tipo}" de "${nombre}".`)
-            }
-            //si el producto no existe
-            else{
-                this.productos.push({nombre, tipo, stock:cantidad })
-                console.log(`el producto "${nombre}" se agregó con exito a la base de datos.`)
-            }
-        }
-        else if (nombre === "martillo" || nombre === "alambre"){
-            console.log("por favor cargar  en la sección de productos generales")
-        }
-        else{
-            console.log("no estan admitidos esos productos en la ferretería")
-        }
-
-        
+    mostrarDetalle():string{
+        return `Clavo ${this.marca} tipo ${this.tipoDeClavo}: cantidad total:${this.precio}, precio:${this.cantidad}. tiene descuento? ${this.tieneDescuento ?? "false"}`
     }
-
-    listarClavos():void{
-        console.log("lista de stock de tipos de clavo de la ferretería: ")
-        this.productos.forEach((producto)=>console.log(`${producto.nombre}(${producto.tipo}): ${producto.stock}`))
-    }
-
 }
-//productos (martillos y alambres)
+class Martillo extends Producto{
+     constructor(marca:string, cantidad:number, precio:number, tieneDescuento:boolean){
+        super(marca, cantidad, precio, tieneDescuento)
+    }
+    mostrarDetalle():string{
+        return `Martillo ${this.marca}: cantidad total:${this.cantidad}, precio:${this.precio}. hay descuento? ${this.tieneDescuento ?? "false"}`
+    }
+}
+
+class Alambre extends Producto{
+    constructor(marca:string, cantidad:number, precio:number, tieneDescuento:boolean){
+        super(marca, cantidad, precio, tieneDescuento)
+    }
+    mostrarDetalle():string{
+        return `Alambre ${this.marca}: cantidad total:${this.cantidad}, precio:${this.precio}. hay descuento? ${this.tieneDescuento ? "Sí" : "No"}`
+    }
+}
+
+type ListaDeProductos = Producto[] 
+
+class Cliente {
+    constructor(protected nombre:string, protected listaDeProductos:ListaDeProductos, protected dineroDisponible: number){
+    }
+
+    calcularTotalNecesario(): number {
+        return this.listaDeProductos.reduce((acum, prod) => acum + prod.getTotal(), 0);
+    }
+    puedeComprar():boolean{
+        return this.calcularTotalNecesario() < this.dineroDisponible
+    }
+
+    agregarProducto(producto:Producto):Producto[] {
+        this.listaDeProductos.push(producto);
+        return this.listaDeProductos;
+    }
+
+    mostrarDetalleDeComprar():string{
+        return `${this.nombre} tiene a disposición ${this.dineroDisponible} y necesita ${this.calcularTotalNecesario()}. puede comprar? ${this.puedeComprar() ? "Sí" : "No"} `
+    }
+}
+
+const clavosAltaCalidad = new Clavo ('pimpollo',10,700,false,'anillado')
+const martillosTruchos = new Martillo('fulano',4,600,true)
+
+const juliana = new Cliente('juliana',[clavosAltaCalidad, martillosTruchos],15000)
+
+const detallesJuli = juliana.mostrarDetalleDeComprar()
+
+console.log(detallesJuli)
 
 
 
 
-// caso clavos:
-const clavos = new clavo("MarcaX", 100, 50, true, "anillados");
 
-// Agregar productos
-clavos.agregarProducto("Clavo", "anillados", 20);
-clavos.agregarProducto("Clavo", "cabeza ancha", 15);
-clavos.agregarProducto("Clavo", "anillados", 10); // Actualiza el stock
+*/
 
-// Listar productos
-clavos.listarProductos();
+
